@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
+const multer = require('multer');
 const Gallery = require('../models/galleryModel');
 const Category = require('../models/categoryModel');
 const User = require('../models/userModel');
 const catchAsync = require('../middlewares/catchAsync');
+const fs = require('fs');
+const path = require('path');
 
 exports.getGallery = catchAsync(async (req, res, next) => {
   const category = await Category.findOne().sort({ order: 1 });
@@ -17,8 +19,8 @@ exports.getGallery = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const gallery = await Gallery.find(filterData).skip(skip).limit(limit).populate({
-    path: 'category',
-    select: 'name',
+    path: 'category_id',
+    select: '_id name',
   });
 
   const count = await Gallery.countDocuments();
@@ -71,68 +73,62 @@ exports.getGalleryByCategory = catchAsync(async (req, res, next) => {
   });
 });
 
-/*
-async function getPhotoData(res, taskId, title, status) {
-  try {
-    let filterData = { task_id: taskId };
-    const screenshots = await Gallery.find(filterData).sort('-createdAt');
-    res.status(200).json({
-      title: title,
-      status: status,
-      screenshots,
-    });
-  } catch (err) {
-    console.error(err);
-    throw err;
+exports.addPhoto = catchAsync(async (req, res, next) => {
+  let categories = await Category.find().sort({ order: 1 });
+
+  if (!categories) {
+    return next(new AppError('No document found with that ID', 404));
   }
-}
-*/
+
+  res.status(200).json({
+    title: 'Add gallery',
+    status: 'success',
+    categories,
+  });
+});
 
 exports.createPhoto = catchAsync(async (req, res, next) => {
   try {
     req.body._id = new mongoose.Types.ObjectId();
-    req.body.owner = res.locals.user._id;
-
-    const screenshotNames = req.files.map((file) => file.originalname);
 
     for (const file of req.files) {
       const tempPath = file.path;
-      const destinationPath = path.join('./uploads/screenshots', file.filename);
+      const destinationPath = path.join('./uploads/gallery', file.filename);
       fs.renameSync(tempPath, destinationPath);
     }
 
     for (const fileName of req.files) {
       const tempPath = fileName.path;
-
-      const screenshot = await Screenshot.create({
-        name: req.body.name,
-        file: fileName.filename,
-        owner: req.body.owner,
-        task_id: req.body.task_id,
-        project_id: req.body.project_id,
-        owner: res.locals.user._id,
+      const gallery = await Gallery.create({
+        photo: fileName.filename,
+        category_id: req.body.category_id,
       });
     }
 
-    await getScreenshotsData(res, req.body.task_id, 'Screenshot created', 'success');
+
+    res.status(200).json({
+      message: 'Photo successfully uploaded',
+    });
   } catch (err) {
     console.log(err);
-    await getScreenshotsData(res, req.body.task_id, 'Screenshot error', 'error');
+    res.status(200).json({
+      message: err,
+    });
   }
 });
 
 exports.deletePhoto = catchAsync(async (req, res, next) => {
-  const doc = await Screenshot.findByIdAndDelete(req.body.id);
+  const doc = await Galery.findByIdAndDelete(req.body.id);
 
   try {
-    fs.unlinkSync(`./uploads/screenshot/${doc.file}`);
+    fs.unlinkSync(`./uploads/gallery/${doc.file}`);
   } catch (err) {
     console.error('Error:', err);
   }
 
-  await getScreenshotsData(res, req.body.task_id, 'Screenshot deleted', 'success');
+  await getPhotosData(res, req.body.task_id, 'Photo deleted', 'success');
   if (!doc) {
-    await getScreenshotsData(res, req.body.task_id, 'Screenshot error', 'error');
+    await getPhotosData(res, req.body.task_id, 'Photo error', 'error');
   }
 });
 
@@ -210,6 +206,6 @@ exports.resizeGallery = catchAsync(async (req, res, next) => {
 
 exports.Photo = catchAsync(async (req, res, next) => {
   const filename = req.params.filename;
-  const filePath = path.join(process.env.FILE_PATH, 'uploads/screenshots', filename);
+  const filePath = path.join(process.env.FILE_PATH, 'uploads/gallery', filename);
   res.sendFile(filePath);
 });

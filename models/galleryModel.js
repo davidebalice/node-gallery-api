@@ -4,7 +4,6 @@ const gallerySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Insert name of photo'],
     },
     description: {
       type: String,
@@ -24,7 +23,6 @@ const gallerySchema = new mongoose.Schema(
     owner: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
-      required: [true, 'Photo must belong to a user'],
     },
   },
   {

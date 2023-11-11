@@ -23,9 +23,10 @@ router.use(authController.protect);
 router.route('/gallery').get(authController.protect, galleryController.getGallery);
 router.route('/gallery/:id').get(authController.protect, galleryController.getGalleryByCategory);
 
-//router.route('/photo/:id').get(demoMode, authController.protect, galleryController.getPhoto);
-
-router.route('/add/gallery/').post(demoMode, authController.protect, upload.any(), galleryController.createPhoto);
+router
+  .route('/add/gallery/')
+  .get(demoMode, authController.protect, galleryController.addPhoto)
+  .post(demoMode, authController.protect, upload.any(), galleryController.createPhoto);
 /*
 router
   .route('/edit/gallery/:id')
@@ -33,5 +34,6 @@ router
   .post(demoMode, authController.protect, galleryController.updatePhoto);
 */
 router.route('/gallery/delete/:id').post(demoMode, authController.protect, galleryController.deletePhoto);
+router.route('/gallery/photo/:filename').get(authController.protect, galleryController.Photo);
 
 module.exports = router;
