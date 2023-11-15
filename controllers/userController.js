@@ -27,12 +27,8 @@ const upload = multer({
 exports.uploadPhotoUser = upload.single('photo');
 
 exports.resizePhotoUser = catchAsync(async (req, res, next) => {
-  console.log(req.file);
   if (!req.file) return next();
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-  console.log('req.file.filename');
-  console.log(req.file.filename);
-  console.log(`${process.env.FILE_PATH}/uploads/users/${req.file.filename}`);
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
@@ -65,7 +61,6 @@ exports.getUserByToken = catchAsync(async (req, res, next) => {
         '-passwordChangedAt -passwordResetExpires -createdAt -passwordResetToken -passwordConfirm'
       );
 
-      console.log(user);
       if (!user) {
         res.status(400).json({
           status: 'error',
@@ -104,20 +99,13 @@ exports.getUsers = catchAsync(async (req, res, next) => {
     const regex = new RegExp(req.query.key, 'i');
     filterData.name = { $regex: regex };
   }
-  /*
-  if (userRole === 'admin') {
-    filterData.$or = [{ owner: userId }];
-  } else {
-    filterData.$or = [{ owner: userId }, { 'members.user': userId }];
-  }
-*/
 
-  const setLimit = 10;
+  const setLimit = 12;
   const limit = req.query.limit * 1 || setLimit;
   const page = req.query.page * 1 || 1;
   const skip = (page - 1) * limit;
   const users = await User.find(filterData).sort({ role: 1, createdAt: -1 }).skip(skip).limit(limit);
-  const count = await User.countDocuments();
+  const count = await User.countDocuments(filterData);
   const totalPages = Math.ceil(count / limit);
 
   res.status(200).json({
@@ -217,9 +205,6 @@ exports.updateUser = catchAsync(async (req, res, next) => {
 exports.updatePassword = catchAsync(async (req, res, next) => {
   try {
     const { password, passwordConfirm } = req.body;
-
-    console.log(password);
-    console.log(passwordConfirm);
 
     if (password !== passwordConfirm) {
       return res.status(200).json({ status: 'error', message: 'Password not match' });

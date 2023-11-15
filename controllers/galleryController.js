@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 exports.getGallery = catchAsync(async (req, res, next) => {
+  const categories = await Category.find().sort({ order: 1 });
   const category = await Category.findOne().sort({ order: 1 });
 
   let filterData = {
@@ -15,7 +16,7 @@ exports.getGallery = catchAsync(async (req, res, next) => {
   };
 
   const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 10;
+  const limit = req.query.limit * 1 || 12;
   const skip = (page - 1) * limit;
 
   const gallery = await Gallery.find(filterData).skip(skip).limit(limit).populate({
@@ -23,8 +24,9 @@ exports.getGallery = catchAsync(async (req, res, next) => {
     select: '_id name',
   });
 
-  const count = await Gallery.countDocuments();
+  const count = await Gallery.countDocuments(filterData);
   const totalPages = Math.ceil(count / limit);
+
   let message = '';
   if (req.query.m) {
     if (req.query.m === '1') {
@@ -34,29 +36,44 @@ exports.getGallery = catchAsync(async (req, res, next) => {
     }
   }
 
+  console.log('req.query.page');
+  console.log(req.query);
+  console.log(req.query.page);
+
+
   res.status(200).json({
     title: 'Gallery',
     gallery,
+    categories,
+    category,
+    currentPage: page,
+    page,
+    limit,
+    totalPages,
   });
 });
 
 exports.getGalleryByCategory = catchAsync(async (req, res, next) => {
+  const categories = await Category.find().sort({ order: 1 });
   let filterData = {
     category_id: new mongoose.Types.ObjectId(req.params.id),
   };
 
-  console.log(req.params.id);
-
+  const setLimit = 12;
+  const limit = req.query.limit * 1 || setLimit;
   const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
+  console.log('req.query.page');
+  console.log(req.query);
+  console.log(req.query.page);
+
   const gallery = await Gallery.find(filterData).skip(skip).limit(limit).populate({
-    path: 'category',
-    select: 'name',
+    path: 'category_id',
+    select: 'name _id',
   });
 
-  const count = await Gallery.countDocuments();
+  const count = await Gallery.countDocuments(filterData);
   const totalPages = Math.ceil(count / limit);
   let message = '';
   if (req.query.m) {
@@ -70,6 +87,11 @@ exports.getGalleryByCategory = catchAsync(async (req, res, next) => {
   res.status(200).json({
     title: 'Gallery',
     gallery,
+    categories,
+    currentPage: page,
+    page,
+    limit,
+    totalPages,
   });
 });
 
@@ -105,7 +127,6 @@ exports.createPhoto = catchAsync(async (req, res, next) => {
       });
     }
 
-
     res.status(200).json({
       message: 'Photo successfully uploaded',
     });
@@ -118,46 +139,55 @@ exports.createPhoto = catchAsync(async (req, res, next) => {
 });
 
 exports.deletePhoto = catchAsync(async (req, res, next) => {
-  const doc = await Galery.findByIdAndDelete(req.body.id);
+  const doc = await Gallery.findByIdAndDelete(req.body.id);
 
   try {
-    fs.unlinkSync(`./uploads/gallery/${doc.file}`);
+    fs.unlinkSync(`./uploads/gallery/${doc.photo}`);
   } catch (err) {
     console.error('Error:', err);
   }
 
-  await getPhotosData(res, req.body.task_id, 'Photo deleted', 'success');
+  res.status(200).json({
+    status: 'success',
+    message: 'Photo deleted',
+  });
   if (!doc) {
-    await getPhotosData(res, req.body.task_id, 'Photo error', 'error');
+    res.status(200).json({
+      message: 'error',
+    });
   }
 });
 
 exports.updatePhoto = catchAsync(async (req, res, next) => {
   try {
-    const screenshotId = req.body.id;
+    const photoId = req.body.id;
     const name = req.body.name;
 
-    console.log(screenshotId);
+    console.log(photoId);
     console.log(name);
 
-    const screenshot = await Screenshot.findOne({ _id: screenshotId });
+    const photo = await Gallery.findOne({ _id: photoId });
 
-    if (!screenshot) {
+    if (!photo) {
       return res.status(404).json({
-        message: 'Screenshot not found',
+        message: 'Photo not found',
       });
     }
 
-    screenshot.name = name;
+    photo.name = name;
     try {
-      await screenshot.save();
+      await photo.save();
     } catch (error) {
       console.error('Error:', error);
     }
 
-    await getScreenshotsData(res, screenshot.task_id, 'Screenshot created', 'success');
+    res.status(200).json({
+      message: 'Photo successfully updated',
+    });
   } catch (err) {
-    await getScreenshotsData(res, screenshot.task_id, 'Screenshot error', 'error');
+    res.status(200).json({
+      message: err,
+    });
   }
 });
 

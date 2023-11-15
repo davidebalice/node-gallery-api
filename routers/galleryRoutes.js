@@ -27,12 +27,11 @@ router
   .route('/add/gallery/')
   .get(demoMode, authController.protect, galleryController.addPhoto)
   .post(demoMode, authController.protect, upload.any(), galleryController.createPhoto);
-/*
+
 router
-  .route('/edit/gallery/:id')
-  .get(demoMode, authController.protect, galleryController.editPhoto)
+  .route('/update/photo/')
   .post(demoMode, authController.protect, galleryController.updatePhoto);
-*/
+
 router.route('/gallery/delete/:id').post(demoMode, authController.protect, galleryController.deletePhoto);
 router.route('/gallery/photo/:filename').get(authController.protect, galleryController.Photo);
 
