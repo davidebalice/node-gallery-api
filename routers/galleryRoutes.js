@@ -25,7 +25,7 @@ router.route('/gallery/:id').get(authController.protect, galleryController.getGa
 
 router
   .route('/add/gallery/')
-  .get(demoMode, authController.protect, galleryController.addPhoto)
+  .get(authController.protect, galleryController.addPhoto)
   .post(demoMode, authController.protect, upload.any(), galleryController.createPhoto);
 
 router
