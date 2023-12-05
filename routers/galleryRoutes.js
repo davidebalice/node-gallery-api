@@ -18,8 +18,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.use(authController.protect);
+router.route('/images').get(galleryController.getGallery);
+router.route('/images/:id').get(galleryController.getGalleryByCategory);
 
+router.use(authController.protect);
 router.route('/gallery').get(authController.protect, galleryController.getGallery);
 router.route('/gallery/:id').get(authController.protect, galleryController.getGalleryByCategory);
 
@@ -28,9 +30,7 @@ router
   .get(authController.protect, galleryController.addPhoto)
   .post(demoMode, authController.protect, upload.any(), galleryController.createPhoto);
 
-router
-  .route('/update/photo/')
-  .post(demoMode, authController.protect, galleryController.updatePhoto);
+router.route('/update/photo/').post(demoMode, authController.protect, galleryController.updatePhoto);
 
 router.route('/gallery/delete/:id').post(demoMode, authController.protect, galleryController.deletePhoto);
 router.route('/gallery/photo/:filename').get(authController.protect, galleryController.Photo);
