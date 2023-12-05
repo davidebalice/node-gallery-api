@@ -3,7 +3,6 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const catchAsync = require('../middlewares/catchAsync');
 const mongoose = require('mongoose');
-const factory = require('./handlerFactory');
 const AppError = require('../middlewares/error');
 const multer = require('multer');
 const multerStorage = multer.memoryStorage();

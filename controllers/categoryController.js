@@ -1,12 +1,7 @@
-const multer = require('multer');
 const mongoose = require('mongoose');
-const sharp = require('sharp');
 const Category = require('../models/categoryModel');
-const ApiQuery = require('../middlewares/apiquery');
 const AppError = require('../middlewares/error');
 const catchAsync = require('../middlewares/catchAsync');
-const factory = require('./handlerFactory');
-const { ObjectId } = require('mongodb');
 
 exports.getCategories = catchAsync(async (req, res, next) => {
   let filterData = {};
@@ -41,7 +36,6 @@ exports.getCategories = catchAsync(async (req, res, next) => {
   if (viewType === 'json') {
     res.json(categories);
   } else {
-    console.log(categories);
     res.status(200).json({
       title: 'Categories',
       categories,

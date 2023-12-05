@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const http = require('http').Server(app);
-const validator = require('express-validator');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
@@ -87,6 +86,6 @@ app.use('/api/', userRouter);
 app.use('/api/', galleryRouter);
 app.use('/api/', categoryRouter);
 
-http.listen(8000, function () {
-  console.log('listening on *:8000');
+http.listen(8001, function () {
+  console.log('listening on *:8001');
 });
