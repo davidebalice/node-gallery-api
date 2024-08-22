@@ -1,0 +1,33 @@
+[{
+  "_id": {
+    "$oid": "654e5a95bbd8b8c664a55978"
+  },
+  "name": "Cities",
+  "createdAt": {
+    "$date": "2023-11-10T16:29:47.760Z"
+  },
+  "order": 1,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "654e5a9bbbd8b8c664a55983"
+  },
+  "name": "Landscapes",
+  "createdAt": {
+    "$date": "2023-11-10T16:29:47.760Z"
+  },
+  "order": 3,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "654e5aa0bbd8b8c664a5598e"
+  },
+  "name": "Products",
+  "createdAt": {
+    "$date": "2023-11-10T16:29:47.760Z"
+  },
+  "order": 1,
+  "__v": 0
+}]

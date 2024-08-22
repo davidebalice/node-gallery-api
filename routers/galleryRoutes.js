@@ -20,6 +20,8 @@ const upload = multer({ storage: storage });
 
 router.route('/images').get(galleryController.getGallery);
 router.route('/images/:id').get(galleryController.getGalleryByCategory);
+router.route('/images/photo/:filename').get(galleryController.Photo);
+router.route('/images/thumb/:filename').get(galleryController.Thumb);
 
 router.use(authController.protect);
 router.route('/gallery').get(authController.protect, galleryController.getGallery);
@@ -34,5 +36,6 @@ router.route('/update/photo/').post(demoMode, authController.protect, galleryCon
 
 router.route('/gallery/delete/:id').post(demoMode, authController.protect, galleryController.deletePhoto);
 router.route('/gallery/photo/:filename').get(authController.protect, galleryController.Photo);
+router.route('/gallery/thumb/:filename').get(authController.protect, galleryController.Thumb);
 
 module.exports = router;

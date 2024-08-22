@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'production', // development', 'production', o 'none'
+  mode: 'production', // development', 'production', 'none'
   entry: './index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -21,13 +21,12 @@ module.exports = {
         },
       },
       {
-        parser: {
-          html: false,
-        },
+        test: /\.html$/,
+        use: 'html-loader',
       },
       {
-        test: /\.(node)$/,
-        use: 'ignore-loader',
+        test: /\.node$/,
+        loader: 'ignore-loader', // Un loader fittizio che ignora i file corrispondenti al test
       },
     ],
   },

@@ -4,6 +4,7 @@ const Category = require('../models/categoryModel');
 const catchAsync = require('../middlewares/catchAsync');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 exports.getGallery = catchAsync(async (req, res, next) => {
   const categories = await Category.find().sort({ order: 1 });
@@ -33,11 +34,6 @@ exports.getGallery = catchAsync(async (req, res, next) => {
       message = 'Photo deleted';
     }
   }
-
-  console.log('req.query.page');
-  console.log(req.query);
-  console.log(req.query.page);
-
 
   res.status(200).json({
     title: 'Gallery',
@@ -113,14 +109,18 @@ exports.createPhoto = catchAsync(async (req, res, next) => {
 
     for (const file of req.files) {
       const tempPath = file.path;
-      const destinationPath = path.join('./uploads/gallery', file.filename);
-      fs.renameSync(tempPath, destinationPath);
-    }
+      const destinationPath = path.join('./uploads/gallery', `original-${file.filename}`);
 
-    for (const fileName of req.files) {
-      const tempPath = fileName.path;
-      const gallery = await Gallery.create({
-        photo: fileName.filename,
+      fs.renameSync(tempPath, destinationPath);
+
+      const resizedImagePath = path.join('./uploads/gallery', file.filename);
+      await sharp(destinationPath).resize({ width: 1500 }).toFile(resizedImagePath);
+
+      const thumbPath = path.join('./uploads/gallery/thumbs', file.filename);
+      await sharp(destinationPath).resize({ width: 400 }).toFile(thumbPath);
+
+      await Gallery.create({
+        photo: file.filename,
         category_id: req.body.category_id,
       });
     }
@@ -143,6 +143,22 @@ exports.deletePhoto = catchAsync(async (req, res, next) => {
     fs.unlinkSync(`./uploads/gallery/${doc.photo}`);
   } catch (err) {
     console.error('Error:', err);
+  }
+
+  const PhotoPath = `./uploads/gallery/${doc.photo}`;
+  const originalPhotoPath = `./uploads/gallery/original-${doc.photo}`;
+  const thumbPhotoPath = `./uploads/gallery/thumbs/${doc.photo}`;
+
+  if (fs.existsSync(PhotoPath)) {
+    fs.unlinkSync(PhotoPath);
+  }
+
+  if (fs.existsSync(originalPhotoPath)) {
+    fs.unlinkSync(originalPhotoPath);
+  }
+
+  if (fs.existsSync(thumbPhotoPath)) {
+    fs.unlinkSync(thumbPhotoPath);
   }
 
   res.status(200).json({
@@ -235,5 +251,11 @@ exports.resizeGallery = catchAsync(async (req, res, next) => {
 exports.Photo = catchAsync(async (req, res, next) => {
   const filename = req.params.filename;
   const filePath = path.join(process.env.FILE_PATH, 'uploads/gallery', filename);
+  res.sendFile(filePath);
+});
+
+exports.Thumb = catchAsync(async (req, res, next) => {
+  const filename = req.params.filename;
+  const filePath = path.join(process.env.FILE_PATH, 'uploads/gallery/thumbs', filename);
   res.sendFile(filePath);
 });
