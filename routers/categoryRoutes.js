@@ -4,9 +4,9 @@ const authController = require('../controllers/authController');
 const demoMode = require('../middlewares/demo_mode');
 const router = express.Router({ mergeParams: true });
 
-router.use(authController.protect);
+//router.use(authController.protect);
 
-router.route('/categories').get(authController.protect, categoryController.getCategories);
+router.route('/categories').get(categoryController.getCategories);
 router.route('/add/category').post(demoMode, authController.protect, categoryController.createCategory);
 
 router

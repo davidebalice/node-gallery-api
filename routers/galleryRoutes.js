@@ -23,7 +23,7 @@ router.route('/images/:id').get(galleryController.getGalleryByCategory);
 router.route('/images/photo/:filename').get(galleryController.Photo);
 router.route('/images/thumb/:filename').get(galleryController.Thumb);
 
-router.use(authController.protect);
+//router.use(authController.protect);
 router.route('/gallery').get(authController.protect, galleryController.getGallery);
 router.route('/gallery/:id').get(authController.protect, galleryController.getGalleryByCategory);
 

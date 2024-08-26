@@ -10,13 +10,56 @@ const DB = process.env.DATABASE;
 const cors = require('cors');
 
 global.token = '';
+/*
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+  res.setHeader('Vary', 'Origin');
+  //res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+*/
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL2,
+  process.env.BACKEND_URL,
+  process.env.LOCALHOST_URL,
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const regex = /^https:\/\/(.+\.)?davidebalice\.dev$/;
+  if (regex.test(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+      if (!origin || /(^|\.)davidebalice\.dev$/.test(origin) || /^http:\/\/localhost(:\d{1,5})?$/.test(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     optionsSuccessStatus: 200,
   })
 );
+
+app.use((req, res, next) => {
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
 
 mongoose
   .connect(DB, {

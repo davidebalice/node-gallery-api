@@ -58,10 +58,6 @@ exports.getGalleryByCategory = catchAsync(async (req, res, next) => {
   const page = req.query.page * 1 || 1;
   const skip = (page - 1) * limit;
 
-  console.log('req.query.page');
-  console.log(req.query);
-  console.log(req.query.page);
-
   const gallery = await Gallery.find(filterData).skip(skip).limit(limit).populate({
     path: 'category_id',
     select: 'name _id',
